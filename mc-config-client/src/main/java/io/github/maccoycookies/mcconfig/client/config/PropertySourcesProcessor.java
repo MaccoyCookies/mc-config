@@ -3,6 +3,8 @@ package io.github.maccoycookies.mcconfig.client.config;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
@@ -16,12 +18,14 @@ import java.util.Map;
 /**
  * mc property sources processor
  */
-public class PropertySourcesProcessor implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware {
+public class PropertySourcesProcessor implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware, ApplicationContextAware {
 
     private final static String MC_PROPERTY_SOURCES = "McPropertySources";
     private final static String MC_PROPERTY_SOURCE = "McPropertySource";
 
     Environment environment;
+
+    ApplicationContext applicationContext;
 
     @Override
     public int getOrder() {
@@ -37,11 +41,11 @@ public class PropertySourcesProcessor implements BeanFactoryPostProcessor, Prior
         String app = ENV.getProperty("mcconfig.app", "app1");
         String env = ENV.getProperty("mcconfig.env", "dev");
         String ns = ENV.getProperty("mcconfig.ns", "public");
-        String configServer = ENV.getProperty("mcconfig.configServer", "app1");
+        String configServer = ENV.getProperty("mcconfig.configServer", "http://localhost:9129");
 
         ConfigMeta configMeta = new ConfigMeta(app, env, ns, configServer);
 
-        McConfigService configService = McConfigService.getDefault(configMeta);
+        McConfigService configService = McConfigService.getDefault(applicationContext, configMeta);
         McPropertySource propertySource = new McPropertySource(MC_PROPERTY_SOURCE, configService);
         CompositePropertySource compositePropertySource = new CompositePropertySource(MC_PROPERTY_SOURCES);
         compositePropertySource.addPropertySource(propertySource);
@@ -52,5 +56,10 @@ public class PropertySourcesProcessor implements BeanFactoryPostProcessor, Prior
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

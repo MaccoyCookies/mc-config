@@ -1,12 +1,16 @@
 package io.github.maccoycookies.mcconfig.client.config;
 
 import io.github.maccoycookies.mcconfig.client.repository.McRepository;
+import io.github.maccoycookies.mcconfig.client.repository.McRepositoryChangeListener;
+import org.springframework.context.ApplicationContext;
 
-public interface McConfigService {
+public interface McConfigService extends McRepositoryChangeListener {
 
-    static McConfigService getDefault(ConfigMeta configMeta) {
+    static McConfigService getDefault(ApplicationContext applicationContext, ConfigMeta configMeta) {
         McRepository repository = McRepository.getDefault(configMeta);
-        return new McConfigServiceImpl(repository.getConfig());
+        McConfigService configService = new McConfigServiceImpl(applicationContext, repository.getConfig());
+        repository.addListener(configService);
+        return configService;
     }
 
     String[] getPropertyNames();

@@ -1,6 +1,7 @@
 package io.github.maccoycookies.mcconfig.client.repository;
 
 import io.github.maccoycookies.mcconfig.client.config.ConfigMeta;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -14,6 +15,8 @@ public interface McRepository {
     static McRepository getDefault(ConfigMeta configMeta) {
         return new McRepositoryImpl(configMeta);
     }
+
+    void addListener(McRepositoryChangeListener changeListener);
 
     Map<String, String> getConfig();
 
