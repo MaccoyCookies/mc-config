@@ -30,18 +30,22 @@ public class PropertySourcesProcessor implements BeanFactoryPostProcessor, Prior
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        ConfigurableEnvironment env = (ConfigurableEnvironment) environment;
-        if (env.getPropertySources().contains(MC_PROPERTY_SOURCES)) return;
+        ConfigurableEnvironment ENV = (ConfigurableEnvironment) environment;
+        if (ENV.getPropertySources().contains(MC_PROPERTY_SOURCES)) return;
         // 通过http请求去mcconfig-server获取配置
-        Map<String, String> config = new HashMap<>();
-        config.put("mc.a", "dev500");
-        config.put("mc.b", "dev600");
-        config.put("mc.c", "dev700");
-        McConfigService configService = new McConfigServiceImpl(config);
+
+        String app = ENV.getProperty("mcconfig.app", "app1");
+        String env = ENV.getProperty("mcconfig.env", "dev");
+        String ns = ENV.getProperty("mcconfig.ns", "public");
+        String configServer = ENV.getProperty("mcconfig.configServer", "app1");
+
+        ConfigMeta configMeta = new ConfigMeta(app, env, ns, configServer);
+
+        McConfigService configService = McConfigService.getDefault(configMeta);
         McPropertySource propertySource = new McPropertySource(MC_PROPERTY_SOURCE, configService);
         CompositePropertySource compositePropertySource = new CompositePropertySource(MC_PROPERTY_SOURCES);
         compositePropertySource.addPropertySource(propertySource);
-        env.getPropertySources().addFirst(compositePropertySource);
+        ENV.getPropertySources().addFirst(compositePropertySource);
 
     }
 
