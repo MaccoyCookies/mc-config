@@ -24,6 +24,9 @@ public class McConfigController {
     @Autowired
     private ConfigsMapper configsMapper;
 
+    @Autowired
+    private DistributedLocks locked;
+
     Map<String, Long> VERSIONS = new HashMap<>();
 
     @GetMapping("/list")
@@ -57,6 +60,11 @@ public class McConfigController {
                         @RequestParam("env") String env,
                         @RequestParam("ns") String ns) {
         return VERSIONS.getOrDefault(app + "-" + env + "-" + ns, -1L);
+    }
+
+    @GetMapping("/status")
+    public boolean status() {
+        return locked.getLocked().get();
     }
 
 }
